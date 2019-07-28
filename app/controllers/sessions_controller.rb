@@ -1,28 +1,23 @@
 class SessionsController < ApplicationController
- # ログインページ
   def new
   end
 
-# セッション（ログイン）作成  
   def create
     user = User.find_by(email: params[:session][:email].downcase)
     if user && user.authenticate(params[:session][:password])
-      #　ログイン後にuser情報ページにリダイレクトします。
       log_in user
+      params[:session][:remember_me] == '1' ? remember(user) : forget(user)
       redirect_to user
     else
-      # ここにエラーメッセジ用のflashをいれる。
-     flash.now[:danger] = "認証に失敗しました。"
-     render :new
+      flash.now[:danger] = '認証に失敗しました。'
+      render :new
     end
-    
   end
-  
-# セッション（ログアウト）削除
+
   def destroy
-    log_out
-    flash[:success] = "ログアウトしました。"
+    # ログイン中の場合のみログアウト処理を実行します。
+    log_out if logged_in?
+    flash[:success] = 'ログアウトしました。'
     redirect_to root_url
   end
-  
 end
